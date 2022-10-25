@@ -1,0 +1,26 @@
+
+---
+apiVersion: core.contrail.juniper.net/v1alpha1
+kind: VirtualNetwork
+metadata:
+  name: isolator-ext-svc-vn
+  annotations:
+    core.juniper.net/display-name: isolator-ext-svc-vn
+spec:
+  fabricForwarding: true
+  v4SubnetReference:
+    apiVersion: core.contrail.juniper.net/v1alpha1
+    namespace: isolator
+    kind: Subnet
+    name: isolator-ext-svc-subnet
+---
+apiVersion: core.contrail.juniper.net/v1alpha1
+kind: Subnet
+metadata:
+  name: isolator-ext-svc-subnet
+  namespace: isolator
+  annotations:
+    core.juniper.net/display-name: isolator-ext-svc-subnet
+spec:
+  cidr: "10.123.255.64/26"
+  defaultGateway: 10.123.255.65

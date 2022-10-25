@@ -1,0 +1,296 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-prod
+  labels:
+    science: basic
+    env: isolator-prod
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-dev
+  labels:
+    science: basic
+    env: isolator-dev
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-test
+  labels:
+    science: basic
+    env: isolator-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isolator-webfront-deployment
+  namespace: isolator-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-prod
+      svc: isolator-webfront-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-prod
+        svc: isolator-webfront-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-web
+          image: 'us.gcr.io/inet-science/isolator-webfront:v1'
+          command: ["/usr/bin/supervisord", "-n"]
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nameReacher/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: URLLOCAL
+              value: "http://isolator-app-service.default.svc.cluster.local:8000"
+            - name: URL1
+              value: "http://isolator-app-service.isolator-test.svc.cluster.local:8000"
+            - name: URL2
+              value: "http://isolator-app-service.isolator-dev.svc.cluster.local:8000"
+            - name: URL3
+              value: "http://isolator-app-service.isolator-prod.svc.cluster.local:8000"
+          ports:
+            - name: isolator-web
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isolator-web-deployment-service
+  namespace: isolator-prod
+  annotations:
+    service.contrail.juniper.net/externalNetwork: isolator/isolator-ext-svc-vn
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector:
+    env: isolator-prod
+    svc: isolator-webfront-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isolator-webfront-deployment
+  namespace: isolator-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-test
+      svc: isolator-webfront-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-test
+        svc: isolator-webfront-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-web
+          image: 'us.gcr.io/inet-science/isolator-webfront:v1'
+          command: ["/usr/bin/supervisord", "-n"]
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nameReacher/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: URLLOCAL
+              value: "http://isolator-app-service.default.svc.cluster.local:8000"
+            - name: URL1
+              value: "http://isolator-app-service.isolator-test.svc.cluster.local:8000"
+            - name: URL2
+              value: "http://isolator-app-service.isolator-dev.svc.cluster.local:8000"
+            - name: URL3
+              value: "http://isolator-app-service.isolator-prod.svc.cluster.local:8000"
+          ports:
+            - name: isolator-web
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isolator-web-deployment-service
+  namespace: isolator-test
+  annotations:
+    service.contrail.juniper.net/externalNetwork: isolator/isolator-ext-svc-vn
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector:
+    env: isolator-test
+    svc: isolator-webfront-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isolator-webfront-deployment
+  namespace: isolator-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-dev
+      svc: isolator-webfront-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-dev
+        svc: isolator-webfront-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-web
+          image: 'us.gcr.io/inet-science/isolator-webfront:v1'
+          command: ["/usr/bin/supervisord", "-n"]
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nameReacher/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: URLLOCAL
+              value: "http://isolator-app-service.default.svc.cluster.local:8000"
+            - name: URL1
+              value: "http://isolator-app-service.isolator-test.svc.cluster.local:8000"
+            - name: URL2
+              value: "http://isolator-app-service.isolator-dev.svc.cluster.local:8000"
+            - name: URL3
+              value: "http://isolator-app-service.isolator-prod.svc.cluster.local:8000"
+          ports:
+            - name: isolator-web
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isolator-web-deployment-service
+  namespace: isolator-dev
+  annotations:
+    service.contrail.juniper.net/externalNetwork: isolator/isolator-ext-svc-vn
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector:
+    env: isolator-dev
+    svc: isolator-webfront-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isolator-webfront-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: default
+      svc: isolator-webfront-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: default
+        svc: isolator-webfront-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-web
+          image: 'us.gcr.io/inet-science/isolator-webfront:v1'
+          command: ["/usr/bin/supervisord", "-n"]
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nameReacher/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: URLLOCAL
+              value: "http://isolator-app-service.default.svc.cluster.local:8000"
+            - name: URL1
+              value: "http://isolator-app-service.isolator-test.svc.cluster.local:8000"
+            - name: URL2
+              value: "http://isolator-app-service.isolator-dev.svc.cluster.local:8000"
+            - name: URL3
+              value: "http://isolator-app-service.isolator-prod.svc.cluster.local:8000"
+          ports:
+            - name: isolator-web
+              containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isolator-web-deployment-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector:
+    env: default
+    svc: isolator-webfront-deployment
+    science: basic
+

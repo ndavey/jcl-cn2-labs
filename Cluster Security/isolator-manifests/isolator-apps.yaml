@@ -1,0 +1,273 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-prod
+  labels:
+    science: basic
+    env: isolator-prod
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-dev
+  labels:
+    science: basic
+    env: isolator-dev
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: isolator-test
+  labels:
+    science: basic
+    env: isolator-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: isolator-dev
+  name: isolator-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-dev
+      svc: isolator-app-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-dev
+        svc: isolator-app-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-app
+          image: 'us.gcr.io/inet-science/nodebeaker-app:v1'
+          command:
+          - /usr/local/bin/gunicorn
+          - wsgi:app
+          - --bind
+          - 0.0.0.0:8000
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nodeBeaker/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: nodebeaker
+              containerPort: 8000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: isolator-dev
+  name: isolator-app-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: web
+    port: 8000
+    protocol: TCP
+  selector:
+    env: isolator-dev
+    svc: isolator-app-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: isolator-test
+  name: isolator-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-test
+      svc: isolator-app-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-test
+        svc: isolator-app-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-app
+          image: 'us.gcr.io/inet-science/nodebeaker-app:v1'
+          command:
+          - /usr/local/bin/gunicorn
+          - wsgi:app
+          - --bind
+          - 0.0.0.0:8000
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nodeBeaker/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: nodebeaker
+              containerPort: 8000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: isolator-test
+  name: isolator-app-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: web
+    port: 8000
+    protocol: TCP
+  selector:
+    env: isolator-test
+    svc: isolator-app-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: isolator-prod
+  name: isolator-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: isolator-prod
+      svc: isolator-app-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: isolator-prod
+        svc: isolator-app-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-app
+          image: 'us.gcr.io/inet-science/nodebeaker-app:v1'
+          command:
+          - /usr/local/bin/gunicorn
+          - wsgi:app
+          - --bind
+          - 0.0.0.0:8000
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nodeBeaker/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: nodebeaker
+              containerPort: 8000
+              protocol: TCP 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: isolator-prod
+  name: isolator-app-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: web
+    port: 8000
+    protocol: TCP
+  selector:
+    env: isolator-prod
+    svc: isolator-app-deployment
+    science: basic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isolator-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: default
+      svc: isolator-app-deployment
+      science: basic
+  template:
+    metadata:
+      labels:
+        env: default
+        svc: isolator-app-deployment
+        science: basic
+    spec:
+      containers:
+        - name: isolator-app
+          image: 'us.gcr.io/inet-science/nodebeaker-app:v1'
+          command:
+          - /usr/local/bin/gunicorn
+          - wsgi:app
+          - --bind
+          - 0.0.0.0:8000
+          env:
+            - name: PYTHONPATH
+              value: "/var/run/nodeBeaker/"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: nodebeaker
+              containerPort: 8000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isolator-app-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: web
+    port: 8000
+    protocol: TCP
+  selector:
+    env: default
+    svc: isolator-app-deployment
+    science: basic

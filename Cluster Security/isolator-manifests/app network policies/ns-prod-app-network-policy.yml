@@ -1,0 +1,15 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: prod-app-allow-prod-ns
+  namespace: isolator-prod
+spec:
+  podSelector:
+    matchLabels:
+      env: isolator-prod
+      svc: isolator-app-deployment
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          env: isolator-prod
